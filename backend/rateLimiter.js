@@ -29,10 +29,11 @@ export const connectRedis = async (config = {}) => {
     retryStrategy(times) {
       return Math.min(times * 100, 3000);
     },
-    maxRetriesPerRequest: 3
+    maxRetriesPerRequest: 3,
+    ...(config.tls ? { tls: config.tls } : (currentRedisConfig.tls ? { tls: currentRedisConfig.tls } : {}))
   };
 
-  currentRedisConfig = { host: opts.host, port: opts.port, password: opts.password || null };
+  currentRedisConfig = { host: opts.host, port: opts.port, password: opts.password || null, tls: opts.tls || null };
 
   redis = new Redis(opts);
 
@@ -724,6 +725,9 @@ if (process.env.REDIS_URL) {
     envConfig.host = url.hostname;
     envConfig.port = parseInt(url.port) || 6379;
     envConfig.password = url.password || null;
+    if (url.protocol === 'rediss:') {
+      envConfig.tls = {};
+    }
   } catch {}
 } else {
   if (process.env.REDIS_HOST) envConfig.host = process.env.REDIS_HOST;
