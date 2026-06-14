@@ -1,12 +1,12 @@
-# RateShield — Backend Services
+# RATE LIMITER — Backend Services
 
-This is the Node.js + Express backend that powers the RateShield Rate-Limiting Sandbox. It receives rate-limiting configurations dynamically via HTTP headers and evaluates limits atomically using either **Redis** or an **In-Memory fallback**.
+This is the Node.js + Express backend that powers the RATE LIMITER Sandbox. It receives rate-limiting configurations dynamically via HTTP headers and evaluates limits atomically using either **Redis** or an **In-Memory fallback**.
 
 ---
 
 ## ⚙️ How it Works: Dynamically Configurable Middleware
 
-The backend uses a single Express middleware, `rateLimiter` (in [rateLimiter.js](file:///c:/Users/vakit/OneDrive/Desktop/ApiRate/backend/rateLimiter.js)), that intercepts incoming requests and extracts configuration parameters from headers sent by the client:
+The backend uses a single Express middleware, `rateLimiter` (in [rateLimiter.js](./rateLimiter.js)), that intercepts incoming requests and extracts configuration parameters from headers sent by the client:
 
 *   `X-Limiter-Algo`: The algorithm to evaluate (`token_bucket`, `leaky_bucket`, `fixed_window`, or `sliding_window`).
 *   `X-Limiter-Limit`: The threshold number of requests.
@@ -37,7 +37,7 @@ When responding, the backend attaches standard HTTP headers:
 *   **Memory Fallback:** Managed locally using JS timestamps.
 
 ### 3. Fixed Window (`fixed_window`)
-*   **Concept:** Divides time into fixed windows (e.g. 60-second blocks). A counter tracks request count inside that window, resetting at boundaries.
+*   **Concept:** Divides time into fixed windows (e.g., 60-second blocks). A counter tracks request count inside that window, resetting at boundaries.
 *   **Redis Implementation:** Increments a simple key using `INCR` and sets a TTL to expire the key at the end of the window.
 *   **Memory Fallback:** Maps active window IDs to counters in memory.
 
@@ -51,7 +51,7 @@ When responding, the backend attaches standard HTTP headers:
 ## ⚡ Redis and Fast In-Memory Fallback
 
 The backend connects to Redis at `127.0.0.1:6379`. To maintain application resilience:
-1.  **Fast Connect Timeout:** Redis is configured with a short timeout (`connectTimeout: 1000`).
+1.  **Fast Connect Timeout:** Redis is configured with a short timeout (`connectTimeout: 3000`).
 2.  **Dynamic Failover:** If Redis is down, the middleware falls back to local memory stores (`memoryStores`) immediately without causing request downtime.
 3.  **Automatic Recovery:** Event handlers monitor Redis connection status. If Redis goes online, it switches back to distributed rate limiting automatically.
 
@@ -59,10 +59,9 @@ The backend connects to Redis at `127.0.0.1:6379`. To maintain application resil
 
 ## 🛣️ API Endpoints
 
-*   `GET /api/status`: Non-rate-limited status route. Returns the limiter state mode.
+*   `GET /api/status`: Non-rate-limited status route. Returns the limiter state mode and Redis connection parameters.
 *   `POST /api/reset`: Flushes all rate-limiting metrics (flushes Redis via `FLUSHDB` or clears memory).
-*   `GET /api/`: Rate-limited welcome endpoint (public API).
-*   `GET /api/data`: Rate-limited data retrieval endpoint (protected API).
+*   `GET /api/data`: Consolidated, rate-limited data retrieval endpoint.
 
 ---
 
@@ -75,6 +74,6 @@ npm install
 
 ### 2. Start the Express Server
 ```bash
-node server.js
+npm run dev
 ```
 The server will bind to port `3000` (`http://localhost:3000`).

@@ -133,18 +133,10 @@ app.get('/api/keys/tiers', (req, res) => {
 // Apply rate limiter middleware to all other endpoints
 app.use('/api', rateLimiter);
 
-// Endpoint 1: Home endpoint
-app.get('/api/', (req, res) => {
-  res.json({
-    message: 'Welcome to the secure API. This endpoint is rate limited.',
-    rateLimit: req.rateLimit
-  });
-});
-
 // Endpoint 2: Data endpoint
 app.get('/api/data', (req, res) => {
   res.json({
-    data: 'Here is some protected server data. Accessing this consumes 1 quota.',
+    data: 'Welcome to secure Api. This endpoint is protected',
     rateLimit: req.rateLimit
   });
 });
